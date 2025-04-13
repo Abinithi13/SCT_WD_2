@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calculator with History</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #8e44ad, #3498db);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.5s ease;
+    }
+
+    .light-theme {
+      background: linear-gradient(135deg, #fdfbfb, #ebedee);
+    }
+
+    .calculator {
+      background: #2c3e50;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      width: 320px;
+      text-align: center;
+      transition: background 0.5s ease;
+    }
+
+    .light-theme .calculator {
+      background: #ffffff;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .calculator h1 {
+      color: #ecf0f1;
+      font-size: 30px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .light-theme .calculator h1 {
+      color: #2c3e50;
+      text-shadow: none;
+    }
+
+    #theme-toggle {
+      margin-bottom: 15px;
+      background: #16a085;
+      border: none;
+      padding: 8px 15px;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #display {
+      width: 100%;
+      height: 60px;
+      font-size: 24px;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      text-align: right;
+      background: #ecf0f1;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn, #equals, #clear {
+      height: 60px;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background: #34495e;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover, #equals:hover, #clear:hover {
+      background: #5dade2;
+    }
+
+    .light-theme .btn,
+    .light-theme #equals,
+    .light-theme #clear {
+      background: #ecf0f1;
+      color: #2c3e50;
+      border: 1px solid #ccc;
+    }
+
+    .light-theme .btn:hover,
+    .light-theme #equals:hover,
+    .light-theme #clear:hover {
+      background: #d6eaf8;
+    }
+
+    #equals {
+      grid-column: span 4;
+      background: #27ae60;
+      font-weight: bold;
+    }
+
+    #equals:hover {
+      background: #2ecc71;
+    }
+
+    #clear {
+      background: #e74c3c;
+    }
+
+    #clear:hover {
+      background: #c0392b;
+    }
+
+    #history {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      color: #ecf0f1;
+      max-height: 120px;
+      overflow-y: auto;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .light-theme #history {
+      background: #f5f5f5;
+      color: #2c3e50;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>🧮 Calculator</h1>
+    <button id="theme-toggle">🌙 Dark / ☀️ Light</button>
+    <input type="text" id="display" disabled />
+    <div class="buttons">
+      <button class="btn" data-value="7">7</button>
+      <button class="btn" data-value="8">8</button>
+      <button class="btn" data-value="9">9</button>
+      <button class="btn" data-value="/">÷</button>
+
+      <button class="btn" data-value="4">4</button>
+      <button class="btn" data-value="5">5</button>
+      <button class="btn" data-value="6">6</button>
+      <button class="btn" data-value="*">×</button>
+
+      <button class="btn" data-value="1">1</button>
+      <button class="btn" data-value="2">2</button>
+      <button class="btn" data-value="3">3</button>
+      <button class="btn" data-value="-">−</button>
+
+      <button class="btn" data-value="0">0</button>
+      <button class="btn" data-value=".">.</button>
+      <button id="clear">C</button>
+      <button class="btn" data-value="+">+</button>
+
+      <button id="equals">=</button>
+    </div>
+
+    <div id="history">
+      <strong>History:</strong>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    const buttons = document.querySelectorAll(".btn");
+    const clear = document.getElementById("clear");
+    const equals = document.getElementById("equals");
+    const toggleTheme = document.getElementById("theme-toggle");
+    const body = document.body;
+    const historyLog = document.getElementById("log");
+
+    // Append value to display
+    buttons.forEach(button => {
+      button.addEventListener("click", () => {
+        display.value += button.getAttribute("data-value");
+      });
+    });
+
+    // Clear display
+    clear.addEventListener("click", () => {
+      display.value = "";
+    });
+
+    // Evaluate and log
+    equals.addEventListener("click", () => {
+      try {
+        const expression = display.value;
+        const result = eval(expression);
+        display.value = result;
+
+        const entry = document.createElement("div");
+        entry.textContent = `${expression} = ${result}`;
+        historyLog.prepend(entry);
+      } catch {
+        display.value = "Error";
+      }
+    });
+
+    // Keyboard input
+    document.addEventListener("keydown", (e) => {
+      if (
+        (e.key >= "0" && e.key <= "9") ||
+        ["+", "-", "*", "/", "."].includes(e.key)
+      ) {
+        display.value += e.key;
+      } else if (e.key === "Enter") {
+        try {
+          const expression = display.value;
+          const result = eval(expression);
+          display.value = result;
+
+          const entry = document.createElement("div");
+          entry.textContent = `${expression} = ${result}`;
+          historyLog.prepend(entry);
+        } catch {
+          display.value = "Error";
+        }
+      } else if (e.key === "Backspace") {
+        display.value = display.value.slice(0, -1);
+      } else if (e.key.toLowerCase() === "c") {
+        display.value = "";
+      }
+    });
+
+    // Toggle theme
+    toggleTheme.addEventListener("click", () => {
+      body.classList.toggle("light-theme");
+    });
+  </script>
+</body>
+</html>
